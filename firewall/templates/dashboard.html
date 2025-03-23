@@ -3,64 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firewall Dashboard</title>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        .log-container { 
-            width: 100%; 
-            overflow-x: auto; /* Horizontal scroll */
-            overflow-y: auto; /* Vertical scroll */
-            max-height: 300px; /* Limit height */
-            border: 1px solid black; 
-        }
-        table { width: 100%; border-collapse: collapse; white-space: nowrap; }
-        th, td { padding: 10px; border: 1px solid black; text-align: left; }
-        th { background-color: #f2f2f2; }
-        input, button { padding: 10px; margin: 5px; }
-    </style>
+    <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-
-    <h2>Firewall Logs</h2>
-    <div class="log-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Timestamp</th>
-                    <th>Protocol</th>
-                    <th>Source IP</th>
-                    <th>Destination IP</th>
-                    <th>Domain</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="logTable">
-                {% for log in logs %}
-                    <tr>
-                        <td>{{ log.timestamp }}</td>
-                        <td>{{ log.protocol }}</td>
-                        <td>{{ log.src_ip }}</td>
-                        <td>{{ log.dest_ip }}</td>
-                        <td>{{ log.domain }}</td>
-                        <td>{{ log.action }}</td>
+<body class="bg-gray-100 text-gray-900">
+    <div class="container mx-auto p-6">
+        <h2 class="text-2xl font-semibold mb-4">FIREWALL LOGS</h2>
+        <div class="overflow-auto bg-white shadow-md rounded-lg p-4 max-h-96">
+            <table class="min-w-full border-collapse">
+                <thead>
+                    <tr class="bg-gray-200 text-gray-700">
+                        <th class="p-3 border">Timestamp</th>
+                        <th class="p-3 border">Protocol</th>
+                        <th class="p-3 border">Source IP</th>
+                        <th class="p-3 border">Destination IP</th>
+                        <th class="p-3 border">Domain</th>
+                        <th class="p-3 border">Action</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody id="logTable">
+                    {% for log in logs %}
+                        <tr class="border-b hover:bg-gray-100">
+                            <td class="p-3 border">{{ log.timestamp }}</td>
+                            <td class="p-3 border">{{ log.protocol }}</td>
+                            <td class="p-3 border">{{ log.source_ip }}</td>
+                            <td class="p-3 border">{{ log.destination_ip }}</td>
+                            <td class="p-3 border">{{ log.domain }}</td>
+                            <td class="p-3 border">{{ log.action }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="text-2xl font-semibold mt-6 mb-4">BLOCKED DOMAINS</h2>
+        <ul id="blockedDomains" class="bg-white shadow-md rounded-lg p-4">
+            {% for domain in blocked_domains %}
+                <li class="p-2 border-b flex justify-between items-center">
+                    <span>{{ domain }}</span>
+                    <button class="bg-green-500 text-white px-3 py-1 rounded" onclick="allowDomain('{{ domain }}')">Allow</button>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <div class="mt-4">
+            <input type="text" id="domainInput" class="p-2 border rounded w-64" placeholder="Enter domain to block">
+            <button class="bg-red-500 text-white px-4 py-2 rounded" onclick="blockDomain()">Block</button>
+        </div>
     </div>
 
-    <h2>Blocked Domains</h2>
-    <ul id="blockedDomains">
-        {% for domain in blocked_domains %}
-            <li>{{ domain }} <button onclick="allowDomain('{{ domain }}')">Allow</button></li>
-        {% endfor %}
-    </ul>
-
-    <input type="text" id="domainInput" placeholder="Enter domain to block">
-    <button onclick="blockDomain()">Block</button>
-
     <script>
-        // Block a domain
         function blockDomain() {
             let domain = document.getElementById("domainInput").value;
             fetch("/block", {
@@ -69,13 +61,11 @@
                 headers: { "Content-Type": "application/json" }
             }).then(response => response.json()).then(data => {
                 if (data.success) {
-                    console.log("✅ Domain blocked:", domain);
-                    location.reload(); // Refresh page to update UI
+                    location.reload();
                 }
             });
         }
 
-        // Allow a domain
         function allowDomain(domain) {
             fetch("/allow", {
                 method: "POST",
@@ -83,12 +73,10 @@
                 headers: { "Content-Type": "application/json" }
             }).then(response => response.json()).then(data => {
                 if (data.success) {
-                    console.log("✅ Domain allowed:", domain);
-                    location.reload(); // Refresh page to update UI
+                    location.reload();
                 }
             });
         }
     </script>
-
 </body>
 </html>
